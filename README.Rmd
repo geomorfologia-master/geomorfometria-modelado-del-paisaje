@@ -1,0 +1,289 @@
+---
+title: "Geomorfología"
+subtitle: "Unidad 2 (Semana 3). <br> Geomorfometría y Modelado del Paisaje"
+author: "El tali"
+institute: "Universidad Autónoma de Santo Domingo (UASD)"
+date: "Actualizado: `r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    mathjax: default
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: '16:9'
+      slideNumberFormat: '%current%/%total%'
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  fig.width = 12, 
+  fig.height = 8, 
+  fig.retina = 3,
+  out.width = "100%",
+  cache = FALSE,
+  echo = FALSE,
+  message = FALSE, 
+  warning = FALSE,
+  hiline = TRUE
+)
+library(ggplot2)
+library(dplyr)
+```
+
+
+```{css, echo=FALSE, eval=T}
+.remark-slide-content {
+  font-size: 30px;
+  line-height: 1.4;
+  <!-- font-family: "Inter", "Helvetica Neue", Arial, sans-serif; -->
+}
+
+.title-slide {
+  background-image: url('fondo.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.title-slide .remark-slide-content {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+.large { font-size: 150% }
+.medium { font-size: 130% }
+.small { font-size: 110% }
+.tiny { font-size: 90% }
+.tiniest { font-size: 60% }
+
+.green { color: #2E8B57; }
+.blue { color: #4169E1; }
+.red { color: #DC143C; }
+
+.highlight {
+  background-color: #ffff99;
+  padding: 2px 4px;
+}
+
+.box {
+  background-color: #f0f8ff;
+  border: 2px solid #4169E1;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 10px 0;
+}
+
+.equation {
+  background-color: #f5f5f5;
+  border-left: 5px solid #2E8B57;
+  padding: 15px;
+  margin: 10px 0;
+  font-family: 'Courier New', monospace;
+}
+```
+
+# 🌍 Introducción a la Geomorfometría
+
+- Definición: ciencia de la **cuantificación de la forma de la superficie terrestre** a partir de modelos digitales de elevación (MDE).
+- Basada en fundamentos matemáticos, cartográficos y geoinformáticos.
+
+---
+
+# Panorama y fundamentos
+
+.tiny[
+- **Qué es**: cuantificación de la forma del terreno con MDE (curvaturas, pendientes, orientación, rugosidad).
+- **Representaciones**: cuadrículas (raster), TIN, nubes de puntos; resolución ↔ escala de proceso.
+- **Calidad/errores**: ruido, artefactos, vacíos; impacto directo en parámetros derivados.
+.box[
+**Aplicaciones base**: geomorfología, hidrología, suelos, vegetación, agricultura de precisión, riesgos naturales, clasificación del relieve, estabilidad de laderas, hábitats, conectividad y fragmentación, planificación territorial.
+]
+]
+
+---
+
+# Historia de la Geomorfometría
+
+- **Década 1950–60**: primeros intentos de cuantificación (curvaturas, pendientes) en geomorfología.
+- **1970–80**: auge de la **cartografía analítica** (Waldo Tobler, Peter Burrough).
+- **1990**: popularización de los **MDE** gracias a la teledetección.
+- **2000s**: consolidación con *Geomorphometry: Concepts, Software, Applications* (Hengl & Reuter, 2009).
+- **Hoy**: integración con **IA, LiDAR, Big Data, machine learning** y aplicaciones en geociencias y agricultura de precisión.
+
+---
+
+# Paquetes de Software
+
+- **SAGA GIS**: especializado en parámetros topográficos.
+- **GRASS GIS**: análisis hidrológicos, modelado espacial.
+- **QGIS**: plataforma versátil con plugins (p. ej., `terrain analysis`).
+- **Whitebox Geospatial Analysis Tools (GAT)**: análisis avanzado de terreno.
+- **R**: paquetes como `terra`, `raster`, `gdaldem`, `whitebox`.
+- **Python**: librerías `richdem`, `pysheds`, `xarray-spatial`.
+- (privativo) **ESRI ArcGIS**: extensiones de análisis de terreno.
+
+---
+
+# Modelos Digitales de Elevación (MDE): adquisición, preparación y calidad
+
+.tiny[
+- **Fuentes de datos**: levantamientos topográficos, fotogrametría (SfM), **LiDAR**, radar (**SRTM**), **ASTER GDEM**, **Copernicus DEM**.  
+- **Pre-procesado**: mosaico, reproyección, **sink filling**, filtrado (*denoise*), recortes por AOI, *void filling*.  
+- **Evaluación de calidad**: error vertical (RMSE/MAE), *hillshade* multi-azimut, perfiles, comparación con GNSS.  
+- **Calidad y resolución**: determinan la fiabilidad de los parámetros derivados.
+
+.box[
+.tiniest[
+**Claves**: trazabilidad (*lineage*) de datos, metadatos, coherencia vertical, propagación de error hacia pendientes y flujo.
+]
+]
+]
+
+---
+
+<div align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Srtm_1.jpg" width="80%" alt="SRTM World DEM">
+  <br>
+  "La misión"
+</div>
+---
+
+<div align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Adatara_Volcano_Relief_Map%2C_SRTM-1.jpg" width="60%" alt="Ejemplo DEM SRTM">
+  <br>
+  Ejemplo DEM SRTM
+</div>
+---
+
+# Parámetros locales y regionales del terreno
+
+- **Locales**: pendiente, aspecto, curvatura (perfil/plan/total), índice de rugosidad.
+- **Regionalización**: ventanas móviles, escalas múltiples, superficies suavizadas vs. *roughness*.
+- **Topoclima**: **radiación potencial**, sombreado, exposición al viento.
+.box[
+**Aplicaciones**: idoneidad de cultivos, microclimas, selección de sitios (energía solar/eólica), modelado de biodiversidad.
+]
+
+---
+
+# Hidrología geomorfométrica y landforms
+
+- **Dirección de flujo**: D8, D∞, MFD; **acumulación de flujo**, contribución específica, TWI.
+- **Redes de drenaje**: umbral por contribución/área efectiva; jerarquías y ordenes de Strahler.
+- **Landforms**: valles, crestas, planicies, *knickzones*; segmentación y clasificación automatizada.
+.box[
+**Aplicaciones**: delineación de cuencas, erosión y transporte, susceptibilidad a inundaciones y flujos de detritos.
+]
+
+---
+
+## Software de aplicaciones hidrológicas y parámetros básicos
+.tiny[
+- **GRASS GIS**: `r.watershed`, `r.terraflow`, `r.slope.aspect`, `r.geomorphon`, `r.sun`, `r.stream.*`.
+- **SAGA GIS**: familia *Terrain Analysis*, curvaturas, TWI, morfometría multiescala.
+- **QGIS**: procesado gráfico, integración GRASS/SAGA, *toolbox* hidrológica.
+- **R**: `terra`, `whitebox`, `RSAGA`, `gdaldem`; *pipelines* reproducibles.
+- **Python**: `richdem`, `pysheds`, `xarray-spatial`, `whitebox`, `rasterio`, `geopandas`.
+.box[
+**Criterios de elección**: tamaño del dato, tipo de análisis (hidrología, curvaturas, clasificación), reproducibilidad, integración SIG.
+]
+]
+
+---
+
+# Aplicaciones: suelos y vegetación
+
+- **Suelos**: mapeo digital edáfico (DSM); covariables topográficas multiescala, curvaturas e índice de humedad.
+- **Vegetación**: gradientes altitudinales, exposición, radiación; *species distribution models* (SDM) con rasgos topográficos.
+.box[
+**Casos**: aptitud de suelos, erosión potencial, corredores ecológicos, restauración basada en sitio.
+]
+
+---
+
+# Aplicaciones: geomorfología fluvial y movimientos en masa
+
+- **Sistemas fluviales**: extracción de redes, métricas de pendientes y concavidad, *stream power*, *knickpoints*.
+- **Movimientos en masa**: pendientes críticas, plan/curvatura, TWI, distancia a drenajes, litología.
+.box[
+**Casos**: susceptibilidad a deslizamientos, zonificación de riesgo, priorización de obras de estabilización.
+]
+
+---
+
+# Aplicaciones: hidrología espacial y meteorología
+
+- **Hidrología**: escorrentía/eventos, rutas preferenciales, conectividad pendiente–canal, respuesta de cuenca.
+- **Meteorología**: corrección orográfica, *downscaling* topográfico de precipitación/temperatura; sombreado y radiación.
+.box[
+**Casos**: modelado de crecidas, recarga, microclimas urbanos y rurales, manejo de agua a escala de parcela.
+]
+
+---
+
+# Agricultura de precisión
+
+- **Curvatura y humedad** → zonas de acumulación/deficiencia hídrica.
+- **Radiación y exposición** → vigor, fenología, rendimiento.
+- **Modelos predictivos** con covariables topográficas + sensores (NDVI/LST).
+.box[
+**Casos**: manejo de insumos por sitio (*Variable Rate Application*, VRA), drenaje parcelario, trazado de terrazas, rutas de maquinaria.
+]
+
+---
+
+# Geoestadística y Análisis de Error
+
+- Todo DEM contiene **incertidumbre**.
+- **Geoestadística**: modelado de errores espaciales, kriging, simulaciones estocásticas.
+- **Propagación de error**: se transmite a los parámetros derivados (pendiente, flujo, etc.).
+- Métodos para cuantificar y reducir errores.
+
+---
+
+# Google Earth Engine (GEE) e Inteligencia Artificial
+
+.tiny[
+- **GEE**: DEM globales (SRTM, MERIT, Copernicus), cálculo de pendientes/curvaturas/radiación a gran escala; *batch* sin infraestructura local.
+- **IA/ML**: RF/GBM/Deep Learning para **clasificación de landforms**, DSM/DTM a partir de nubes de puntos y fotogrametría, fusión DEM+satélite.
+- **Buenas prácticas**: validación cruzada espacial, *feature engineering* topográfico multiescala, *explainable ML, XML, XAI* (SHAP, *SHapley Additive exPlanations*, valores de Shapley) para entender covariables, asociación y, con suerte, causalidad.
+]
+.box[
+.tiny[
+**¿Qué obtenemos y/o qué deberíamos obtener?**: mapas reproducibles (scripts GEE), *model cards* y metadatos; integración con QGIS/GRASS/R/Python.
+]
+]
+
+---
+
+# Discusión en Clase
+
+- ¿Qué fuentes de DEM están disponibles para RD?
+- ¿Qué software usan en su práctica profesional?
+- ¿Qué aplicaciones locales podrían beneficiarse del análisis geomorfométrico?
+
+---
+
+# Conclusiones
+
+- La geomorfometría integra **datos topográficos, estadística y SIG**.
+- Los MDE son la base del análisis, pero su calidad es crucial.
+- Los métodos y software han evolucionado: LiDAR, machine learning, big data.
+- Aplicaciones diversas: desde la **ciencia básica** hasta la **gestión aplicada de recursos y riesgos**.
+
+---
+
+## Referencias
+.tiniest[
+- Hengl & Reuter (2009), *Geomorphometry: Concepts, Software, Applications* .
+- Lovelace, R., Nowosad, J., & Muenchow, J. (2019). *Hands-On Geospatial Analysis with R and QGIS*. Packt Publishing.
+- Wu, Q. (2025). *Introduction to GIS Programming: A Practical Python Guide to Open Source Geospatial Tools*. Independently published. ISBN 979-8286979455. https://leanpub.com/gispro
+- Wu, Q. (2025). *Introducción a la Programación GIS: Una Guía Práctica de Python para Herramientas Geoespaciales de Código Abierto*. Edición en español. Independently published. Disponible en Leanpub. ISBN 979-8286979462. https://leanpub.com/gispro-es
+- Shammunul Islam, M., & Udayashankara, T. (2019). *Mastering Geospatial Development with QGIS 3.x* (3rd ed.). An in-depth guide to becoming proficient in spatial data analysis using QGIS 3.4 and 3.6 with Python. Packt Publishing.
+- Neteler, M., Bowman, M. H., Landa, M., & Metz, M. (2012). *GRASS GIS: The Complete Reference Manual*. The GRASS Development Team. Disponible en: https://grass.osgeo.org/documentation/
+- Chollet, F. (2018). *Deep Learning with Python* (2nd ed.). Manning Publications.
+- Evans, I.S. & Minár, J. (2011). *Geomorphometry: concepts and applications*. Developments in Earth Surface Processes.
+- Olaya, V. (2020). *Sistemas de Información Geográfica: Análisis y gestión de la información espacial*. Versión digital, documentación libre. Disponible en: https://volaya.github.io/libro-sig/
+]
