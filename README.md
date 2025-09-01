@@ -1,5 +1,3 @@
-# geomorfometria-modelado-del-paisaje
-
 # Geomorfología
 
 ## Unidad 2 (Semana 3). Geomorfometría y Modelado del Paisaje
